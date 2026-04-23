@@ -1,0 +1,13 @@
+syntax = "proto2";
+import "nanopb.proto";
+package System;
+
+message ConfigSystemData {
+    required string userSystemID = 1 [(nanopb).max_size = 10];
+    required string ssidWifiSta = 2 [(nanopb).max_size = 32];
+    required string passWifiSta = 3 [(nanopb).max_size = 32];
+    required string uriMqtt = 4 [(nanopb).max_size = 96];
+    required uint32 portMqtt = 5;
+    required string mqttUser = 6 [(nanopb).max_size = 32];
+    required string mqttPass = 7 [(nanopb).max_size = 32];
+}

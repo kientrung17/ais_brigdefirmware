@@ -1,0 +1,18 @@
+idf_component_register(
+    SRCS
+        "src/codec/codecmessage.cpp"
+        "src/message/abstractmessage.cpp"
+        "src/message/configsystemmessage.cpp"
+        "src/message/controlrelaymessage.cpp"
+        "src/message/monitoraquacontrolmessage.cpp"
+        "src/protobuf/aissystem.pb.c"
+        "src/protobuf/aquacontrol.pb.c"
+        "src/protobuf/pb_common.c"
+        "src/protobuf/pb_decode.c"
+        "src/protobuf/pb_encode.c"
+    INCLUDE_DIRS
+        "include"
+        "include/codec"
+        "include/message"
+        "include/protobuf"
+)

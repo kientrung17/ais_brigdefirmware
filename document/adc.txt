@@ -1,0 +1,6 @@
+Ghi chú crash ADC/cache
+
+- Triệu chứng: panic “Cache disabled but cached memory region accessed”, PC trỏ vào adc_hal_get_reading_result (HAL ADC) chạy trong flash trong ngữ cảnh ISR, trùng lúc cache bị tắt (flash/NVS đang thao tác).
+- Nguyên nhân gốc: driver ADC continuous ISR không được đặt trong IRAM (Cờ CONFIG_ADC_CONTINUOUS_ISR_IRAM_SAFE tắt). Khi cache off, ISR vẫn chạy code trong flash → truy cập vùng cache → panic.
+- Khắc phục đã làm: bật CONFIG_ADC_CONTINUOUS_ISR_IRAM_SAFE=y trong sdkconfig.esp32dev để mã ISR ADC continuous (và dữ liệu liên quan) được đưa vào IRAM/DRAM, an toàn khi cache tắt.
+Lưu ý thêm: tránh gọi/để ISR phụ thuộc vào code/const trong flash khi cache off; hạn chế thao tác flash (NVS/ghi log) trong ngắt hoặc tạm dừng ADC continuous trước khi ghi flash nếu cần.

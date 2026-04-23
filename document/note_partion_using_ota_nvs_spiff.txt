@@ -1,0 +1,37 @@
+# Name,      Type, SubType, Offset,   Size,     Flags
+nvs,         data, nvs,     0x9000,   0x6000,
+otadata,     data, ota,     0xF000,   0x2000,
+app0,        app,  ota_0,   0x10000,  0x1E0000,
+app1,        app,  ota_1,   0x1F0000, 0x1E0000,
+spiffs,      data, spiffs,  0x3D0000, 0x30000, 
+
+Đây là một file phân vùng (partitions.csv) dành cho ESP32 sử dụng OTA (Over-the-Air update) và SPIFFS, với tổng dung lượng flash là 4MB (0x400000).
+
+✅ Giải thích từng dòng:
+Tên phân vùng	Loại (Type)	SubType	Offset	Kích thước (Size)	Giải thích
+nvs	data	nvs	0x9000	0x6000 (24KB)	Non-Volatile Storage — nơi lưu cấu hình WiFi, thông số hệ thống
+otadata	data	ota	0xF000	0x2000 (8KB)	ESP-IDF dùng để lưu trạng thái OTA (firmware hiện tại là app0 hay app1)
+app0	app	ota_0	0x10000	0x1E0000 (~1.875MB)	Firmware chính (slot 0)
+app1	app	ota_1	0x1F0000	0x1E0000 (~1.875MB)	Firmware OTA (slot 1) dùng để cập nhật
+spiffs	data	spiffs	0x3D0000	0x30000 (192KB)	Bộ nhớ file hệ thống (SPIFFS), dùng để lưu dữ liệu người dùng như cấu hình, ảnh, v.v.
+
+📊 Tổng cộng dung lượng:
+nvs: 0x6000 = 24KB
+otadata: 0x2000 = 8KB
+app0: 0x1E0000 = 1.875MB
+app1: 0x1E0000 = 1.875MB
+spiffs: 0x30000 = 192KB
+→ Tổng = 0x400000 = 4MB
+
+🔄 Cách hoạt động OTA:
+Khi bạn cập nhật firmware OTA, ESP32 ghi bản mới vào app1.
+Sau khi ghi xong và kiểm tra thành công, nó ghi trạng thái vào otadata để boot vào app1.
+Nếu cập nhật lỗi, nó vẫn boot vào app0 như cũ.
+Bạn có thể luân phiên dùng app0 và app1.
+
+⚠️ Nếu bạn không dùng OTA, bạn không cần:
+otadata
+app1
+
+Và có thể gộp thành một phân vùng factory lớn hơn. Mình đã gửi ví dụ ở câu trước, nhưng có thể tạo lại theo yêu cầu.
+

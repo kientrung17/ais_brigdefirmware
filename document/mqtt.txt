@@ -1,0 +1,30 @@
+Chứng chỉ gốc để xác thực TLS (thường gọi là chứng chỉ SSL/TLS) là một loại chứng chỉ số dùng để đảm bảo kết nối an toàn giữa thiết bị của bạn (ví dụ ESP32) và máy chủ (ví dụ HiveMQ Cloud). Đây là phần quan trọng trong giao thức bảo mật TLS (Transport Layer Security).
+
+🔐 Chứng chỉ gốc TLS là gì?
+Là chứng chỉ số do một tổ chức uy tín (CA – Certificate Authority) phát hành.
+
+Nó giúp xác minh danh tính của máy chủ mà bạn đang kết nối đến.
+
+Khi ESP32 kết nối đến HiveMQ Cloud qua mqtts://, nó sẽ kiểm tra chứng chỉ gốc để đảm bảo máy chủ là hợp lệ và không bị giả mạo.
+
+🧠 Vai trò của chứng chỉ gốc
+Thành phần	Vai trò
+🔑 Khóa công khai	Dùng để mã hóa dữ liệu gửi đi
+🔐 Khóa riêng	Máy chủ dùng để giải mã dữ liệu
+🧾 Chứng chỉ gốc	Xác thực máy chủ là đáng tin cậy
+🛡️ CA (Certificate Authority)	Tổ chức phát hành và xác minh chứng chỉ
+📁 Ví dụ: ISRG Root X1
+HiveMQ Cloud sử dụng chứng chỉ gốc ISRG Root X1 do Let's Encrypt phát hành. Bạn cần tải file .pem của chứng chỉ này và nhúng vào firmware ESP32 để xác thực TLS.
+
+🔗 Tải tại đây: ISRG Root X1 PEM
+
+Sau đó, bạn chuyển sang định dạng C:
+
+bash
+xxd -i isrgrootx1.pem > isrgrootx1.pem.h
+✅ Tại sao cần chứng chỉ gốc?
+Ngăn chặn kết nối đến máy chủ giả mạo
+
+Đảm bảo dữ liệu truyền đi được mã hóa
+
+Giúp ESP32 tin tưởng máy chủ HiveMQ Cloud

@@ -1,0 +1,13 @@
+Tạo file CMakeLists.txt
+yêu cầu: 
+    REQUIRES: nbao hgoomf tất cacr các component mà lib phụ thuộc
+    driver esp_event nvs_flash ais_commonlib esp_wifi
+
+Trỏ đường dẫn tới file lib libframework.a
+target_link_libraries(${COMPONENT_LIB} INTERFACE
+    "${CMAKE_CURRENT_LIST_DIR}/lib/libframework.a"
+)
+
+
+gen tự động: 
+chạy file py generate_cmakelists.py trong từng component

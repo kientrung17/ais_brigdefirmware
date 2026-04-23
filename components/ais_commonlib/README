@@ -1,0 +1,11 @@
+Tự động sinh CMakeLists.txt cho ESP-IDF
+Tập tin generate_cmakelists.py tự động quét thư mục src/ để tìm các file *.cpp và sinh ra CMakeLists.txt chuẩn ESP-IDF. Bạn chỉ cần chạy một lệnh, file cấu hình sẽ được tạo hoặc cập nhật ngay lập tức.
+
+Yêu cầu
+Python 3.x đã cài đặt và thêm vào biến môi trường PATH
+Thư mục dự án có cấu trúc tối thiểu:
+src/ chứa các file nguồn (*.cpp)
+include/ chứa các header nếu cần
+
+Chạy lệnh để gen file CMakeLists.txt:
+py generate_cmakelists.py

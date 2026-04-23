@@ -1,0 +1,14 @@
+syntax = "proto2";
+package AquaCtrl;
+
+message ControlRelayData {
+    required uint32 channel = 1;
+    required uint32 status_control = 2;
+}
+
+message MonitorAquaControlData {
+    required uint32 AmpeChannel1x100 = 1;
+    required uint32 AmpeChannel2x100 = 2;
+    required uint32 IsPowerLostPhare = 3;
+    required uint32 IsLostElectric = 4;
+}
