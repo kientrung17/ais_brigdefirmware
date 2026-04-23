@@ -1,21 +1,21 @@
 #ifndef COMMON_H_
 #define COMMON_H_
 
-#include "stdint.h"
 #include "stdbool.h"
+#include "stdint.h"
+
 
 #ifdef __cplusplus
-extern "C"
-{
+extern "C" {
 #endif
 
 // === C-compatible section ===
 #define MAX_LENGTH_TASK_NAME 16
 #define MAX_TASK 10
 #define FREQUENCE_TIMER_READ_ADC 1000 // 1khz
-    void processTimer100Hz();
-    void initADCReadSensorSTC0130();
-    void processReadADCValueForSensor10Khz();
+void processTimer100Hz();
+void initADCReadSensorSTC0130();
+void processReadADCValueForSensor10Khz();
 
 #ifdef __cplusplus
 }
@@ -24,14 +24,15 @@ extern "C"
 // === C++-only section ===
 #ifdef __cplusplus
 
+#include "HAL_ESP32/esp32adc.h"
 #include "OSFreeRTOS.h"
-#include "loggermanager.h"
-#include <string>
 #include "configsystemmessage.h"
 #include "flashmanager.h"
-#include "HAL_ESP32/esp32adc.h"
+#include "loggermanager.h"
 #include "message/messagecommon.h"
 #include "stdint.h"
+#include <string>
+
 
 #define UDP_LOCAL_PORT_SYSTEM_CONFIG 8080
 // Gpio relay
@@ -41,14 +42,14 @@ extern "C"
 #define PIN_GPIO_RELAY_4 26
 #define PIN_GPIO_RELAY_5 27
 #define PIN_GPIO_RELAY_6 14
-//Gpio input check power
+// Gpio input check power
 #define PIN_GPIO_CHECK_PHASE 34
 #define PIN_GPIO_CHECK_ELECTRIC 18
-//Adc power monitor
+// Adc power monitor
 #define PIN_ADC_SCT013_01 36
 #define PIN_ADC_SCT013_02 39
 #define PIN_ADC_CHECK_PIN 35
-//Pin
+// Pin
 #define PIN_GPIO_CHARGE_PIN 15
 //
 #define PIN_TOUCH_SENSOR_1 4
