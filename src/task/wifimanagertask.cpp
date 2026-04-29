@@ -2,11 +2,10 @@
 #include "loggermanager.h"
 #include "common/common.h"
 
-WifiManagerTask::WifiManagerTask(WiFiManagerAbstract *wifimanager, WebServerAbstract *webserver, std::string nameTask, int numElementQueueSet)
+WifiManagerTask::WifiManagerTask(WiFiManagerAbstract *wifimanager, std::string nameTask, int numElementQueueSet)
     : TaskAbstract(nameTask, numElementQueueSet)
 {
     mWiFiManager = wifimanager;
-    mWebServer = webserver;
 
     mSntpServer = SntpManager();
 }
@@ -48,14 +47,12 @@ void WifiManagerTask::onTimer100HzProcess()
             mIsWifiStaConnected = mWiFiManager->isWifiConnected();
             if (mIsWifiStaConnected == true)
             {
-                LOG_INFO("WifiManagerTask", "Wifi sta connected -> start web server");
-                mWebServer->start();
+                LOG_INFO("WifiManagerTask", "Wifi sta connected");
                 // wifi connected
             }
             else
             {
-                LOG_INFO("WifiManagerTask", "Wifi sta disconnected -> stop web server");
-                mWebServer->stop();
+                LOG_INFO("WifiManagerTask", "Wifi sta disconnected");
             }
         }
     }

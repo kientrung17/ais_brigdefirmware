@@ -18,7 +18,6 @@
 
 #include "common/common.h"
 #include "common/storeflashmanager.h"
-#include "common/webservermanager.h"
 
 // wifi
 #define ID_WIFI_MANAGER_TASK 1
@@ -26,7 +25,6 @@ const std::string WIFI_MANAGER_TASKNAME = "WifiManagerTask";
 const uint8_t MaxElementQueueSetTaskWifiManager = 5;
 WifiManagerTask *mWifiManagerTask{nullptr};
 WiFiManagerAbstract *mWifiManagerAbs{nullptr};
-WebServerAbstract *WebServerAbs{nullptr};
 
 // relay manager task
 //  config system
@@ -77,11 +75,10 @@ void startAllTask() {
   initSystem();
 
   // init task object
-  ////////////////////// wifi + web server
+  ////////////////////// wifi
   mWifiManagerAbs = new WiFiManagerESP32();
-  WebServerAbs = new WebServerEsp32();
   mWifiManagerTask =
-      new WifiManagerTask(mWifiManagerAbs, WebServerAbs, WIFI_MANAGER_TASKNAME,
+      new WifiManagerTask(mWifiManagerAbs, WIFI_MANAGER_TASKNAME,
                           MaxElementQueueSetTaskWifiManager);
   // register sem
   mWifiManagerTask->initRegisterSemaphoreToQueueset(

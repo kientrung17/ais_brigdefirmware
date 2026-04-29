@@ -2,7 +2,6 @@
 #include "taskabstract.h"
 #include <string>
 #include "wifimanagerabstract.h"
-#include "webservermanagerabstract.h"
 #include "sntpmanager.h"
 #include "halgpioabstract.h"
 
@@ -22,7 +21,7 @@ public:
     // wifi
     const std::string SSID_WIFI_AP = "Aqua_Control";
     const std::string PASS_WIFI_AP = "";
-    WifiManagerTask(WiFiManagerAbstract *wifimanager, WebServerAbstract* webserver, std::string nameTask, int numElementQueueSet);
+    WifiManagerTask(WiFiManagerAbstract *wifimanager, std::string nameTask, int numElementQueueSet);
     ~WifiManagerTask();
 
     virtual void onTimer100HzProcess() override;
@@ -53,7 +52,6 @@ private:
 private:
     uint32_t mCounter100Hz{0};
     WiFiManagerAbstract *mWiFiManager{nullptr};
-    WebServerAbstract *mWebServer;
     //init wifi
     WiFiManagerAbstract::STAConfig mStaConfig; 
     WiFiManagerAbstract::APConfig mApConfig;
