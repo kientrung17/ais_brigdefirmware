@@ -2,19 +2,14 @@
 #include "loggermanager.h"
 #include "common/common.h"
 
-StoreFlashManager *StoreFlashManager::mInstance = nullptr;
-
 StoreFlashManager::StoreFlashManager() = default;
 
 StoreFlashManager::~StoreFlashManager() = default;
 
 StoreFlashManager *StoreFlashManager::getInstance()
 {
-    if (mInstance == nullptr)
-    {
-        mInstance = new StoreFlashManager();
-    }
-    return mInstance;
+    static StoreFlashManager instance;
+    return &instance;
 }
 bool StoreFlashManager::readRelayInforFromFlash(ControlRelayMessage *msg, uint8_t relayNum)
 {

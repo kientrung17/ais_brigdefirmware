@@ -25,7 +25,6 @@ public:
     bool saveRelayInforToFlash(ControlRelayMessage msg, uint8_t relayNum);
 
 private:
-    static StoreFlashManager *mInstance;
 
 };
 
