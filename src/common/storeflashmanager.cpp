@@ -8,8 +8,8 @@ StoreFlashManager::~StoreFlashManager() = default;
 
 StoreFlashManager *StoreFlashManager::getInstance()
 {
-    static StoreFlashManager instance;
-    return &instance;
+    static StoreFlashManager sInstance;
+    return &sInstance;
 }
 bool StoreFlashManager::readRelayInforFromFlash(ControlRelayMessage *msg, uint8_t relayNum)
 {
