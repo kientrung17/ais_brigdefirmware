@@ -1,6 +1,7 @@
 #include "task/wifimanagertask.h"
 #include "loggermanager.h"
 #include "common/common.h"
+#include "task/powermanagertask.h"
 
 WifiManagerTask::WifiManagerTask(WiFiManagerAbstract *wifimanager, std::string nameTask, int numElementQueueSet)
     : TaskAbstract(nameTask, numElementQueueSet)
@@ -67,6 +68,16 @@ void WifiManagerTask::onQueueSetMessageProcess(OSBase::QueueHandle queue_sem)
         //todo: bo comment sau khi hoàn thành chức năng đọc nút cấu hình
         // change mode wifi to AP + STA
         // changeModeWifiToAPSta();
+    }
+    else if (queue_sem == gQueuePowerDataToWifiTask)
+    {
+        PowerManagerTask::SampleResult data;
+        if (mOSBase->queueReceive(gQueuePowerDataToWifiTask, &data, 0) == OSBase::QUEUE_OK)
+        {
+            LOG_INFO("WifiManagerTask", "Received Power Data via Queue - V0: %.2fV, I0: %.2fA", 
+                     data.voltage[0], data.ampe[0]);
+            // Todo: Call MQTT publish here in the future
+        }
     }
 }
 

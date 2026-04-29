@@ -70,7 +70,10 @@ extern OSBase *mOSBase;
 extern OSBase::SemHandle gSemInputBtnConfigFromRelayTaskToWifiTask;
 // SCT013 task
 extern OSBase::QueueHandle gQueueADCValueToPowerManageTask;
+// queue transmit data from power task to wifi task for mqtt
+extern OSBase::QueueHandle gQueuePowerDataToWifiTask;
 
+// sys infor
 class HalGpioAbstract;
 class PowerManagerTask;
 extern HalGpioAbstract *gGpioRelay[MessageCommon::MAX_NUM_RELAY];

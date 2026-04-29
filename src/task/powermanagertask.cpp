@@ -104,6 +104,15 @@ void PowerManagerTask::processSamples(const uint16_t samples[NUM_CHANNEL])
             mResult.ampe[i] = MAX_AMPLE_SENSOR * (std::abs(mResult.voltage[i] - VOL_AT_0A)) / (VOL_AT_MAX_A - VOL_AT_0A);
         }
     }
+
+    // Gửi data sang WifiTask qua Queue
+    if (gQueuePowerDataToWifiTask != 0)
+    {
+        if (mOSBase->queueSend(gQueuePowerDataToWifiTask, &mResult) != OSBase::QUEUE_OK)
+        {
+            LOG_ERROR("PowerManagerTask", "queueSend gQueuePowerDataToWifiTask failed");
+        }
+    }
 }
 
 void PowerManagerTask::onQueueSetMessageProcess(OSBase::QueueHandle queue_sem)

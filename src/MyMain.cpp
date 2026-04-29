@@ -84,6 +84,10 @@ void startAllTask() {
   mWifiManagerTask->initRegisterSemaphoreToQueueset(
       &gSemInputBtnConfigFromRelayTaskToWifiTask);
 
+  // queue transmit data from power task to wifi task
+  mWifiManagerTask->initregisterQueueToQueueset(&gQueuePowerDataToWifiTask,
+                                                 sizeof(PowerManagerTask::SampleResult), 10);
+
   ////////////// relay manager task
   auto relayMode = HalGpioAbstract::GpioMode::GPIO_MODE_INPUT_OUTPUT;
   gGpioRelay[0] = new HalEsp32Gpio(PIN_GPIO_RELAY_1, relayMode);

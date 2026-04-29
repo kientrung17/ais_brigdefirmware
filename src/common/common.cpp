@@ -23,6 +23,8 @@ OSBase *mOSBase;
 OSBase::SemHandle gSemInputBtnConfigFromRelayTaskToWifiTask;
 // power manager task
 OSBase::QueueHandle gQueueADCValueToPowerManageTask;
+OSBase::QueueHandle gQueuePowerDataToWifiTask;
+
 // relay gpio for webserver control
 HalGpioAbstract *gGpioRelay[MessageCommon::MAX_NUM_RELAY]{};
 // power manager access for webserver monitor
