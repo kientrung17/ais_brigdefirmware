@@ -75,10 +75,10 @@ if not protos:
 for pr in protos:
     pr_path = os.path.join(PROTO_DIR, pr)
     cmd = [
-        "protoc",
-        f"--proto_path={PROTO_DIR}",
-        f"--proto_path={PROTO_INC_DIR}",  # để import "nanopb.proto"
-        f"--nanopb_out={OUT_SRC}",
+        "nanopb_generator",
+        f"-I{PROTO_DIR}",
+        f"-I{PROTO_INC_DIR}",
+        f"-D{OUT_SRC}",
         pr_path
     ]
     print("[Nanopb] Generating:", " ".join(cmd))

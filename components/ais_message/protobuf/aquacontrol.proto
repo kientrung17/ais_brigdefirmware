@@ -1,14 +1,36 @@
 syntax = "proto2";
 package AquaCtrl;
 
+// =========================================================
+// 1. LỆNH ĐIỀU KHIỂN (App -> Control)
+// Dùng để bật/tắt 6 cái Relay trên mạch Control
+// =========================================================
 message ControlRelayData {
     required uint32 channel = 1;
     required uint32 status_control = 2;
 }
 
-message MonitorAquaControlData {
-    required uint32 AmpeChannel1x100 = 1;
-    required uint32 AmpeChannel2x100 = 2;
-    required uint32 IsPowerLostPhare = 3;
-    required uint32 IsLostElectric = 4;
+// =========================================================
+// 2. DỮ LIỆU TỪ MẠCH MONITOR (Monitor -> Control -> App)
+// Chứa đầy đủ các sensor đo đạc chuyên sâu
+// =========================================================
+message MonitorData {
+    required uint32 deviceId = 1;         // ID của con Monitor (1, 2, 3...)
+    required uint32 AmpeChannel1x100 = 2;
+    required uint32 AmpeChannel2x100 = 3;
+    required uint32 AmpeChannel3x100 = 4;
+    required uint32 Voltagex100 = 5;
+    required uint32 Temperaturex100 = 6;
+}
+
+// =========================================================
+// 3. DỮ LIỆU TỪ MẠCH CONTROL (Control -> App)
+// Báo cáo trạng thái của chính con Gateway (Con Cha)
+// =========================================================
+message ControlStatusData {
+    required uint32 gatewayId = 1;       // ID của con Cha (Ao số mấy)
+    required uint32 AmpeChannel1x100 = 2;
+    required uint32 AmpeChannel2x100 = 3;
+    required uint32 IsPowerLostPhare = 4;
+    required uint32 IsLostElectric = 5;
 }
