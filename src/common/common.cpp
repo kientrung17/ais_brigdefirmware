@@ -38,21 +38,6 @@ FlashManagerAbstract *gFlashManager = new FlashManager();
 bool gIsSntpSynced = false;
 // Init function
 
-// ADC check pin
-//  ADC read STC013
-HalAdcAbstract *mAdcSCT0013_01;
-HalAdcAbstract *mAdcSCT0013_02;
-HalAdcAbstract *mAdcCHECKPin;
-uint32_t mCounterSendADCToTask = 0;
-static constexpr uint16_t MAX_COUNTER_SEND_ADC_10Hz =
-    FREQUENCE_TIMER_READ_ADC / 10;
-// giá trị adc lấy max trong 100ms
-uint32_t mAdcSCT01Value = 0;
-uint32_t mAdcSCT02Value = 0;
-// giá trị adc lưu trữ tạm thời
-uint32_t mAdcSCT01ValueTmp = 0;
-uint32_t mAdcSCT02ValueTmp = 0;
-
 void processTimer100Hz() {
   static int counter = 0;
   // send semmaphore event 100Hz (every 10 calls, since timer is 1kHz)
@@ -60,33 +45,6 @@ void processTimer100Hz() {
     TaskManager::getInstance()->onTimer100Hz();
     counter = 0;
   }
-  // Read ADC for SCT013 every 1ms
-  processReadADCValueForSensor10Khz();
-}
-
-void initADCReadSensorSTC0130() {
-  mAdcSCT0013_01 = new HalEsp32Adc();
-  mAdcSCT0013_02 = new HalEsp32Adc();
-  mAdcCHECKPin = new HalEsp32Adc();
-  if (!mAdcSCT0013_01->init(PIN_ADC_SCT013_01, HalAdcAbstract::Mode::DMA)) {
-    LOG_ERROR("Common", "initADCReadSensorSTC0130: init mAdcSCT0013_01 failed");
-    delete mAdcSCT0013_01;
-    mAdcSCT0013_01 = nullptr;
-  }
-  if (!mAdcSCT0013_02->init(PIN_ADC_SCT013_02, HalAdcAbstract::Mode::DMA)) {
-    LOG_ERROR("Common", "initADCReadSensorSTC0130: init mAdcSCT0013_02 failed");
-    delete mAdcSCT0013_02;
-    mAdcSCT0013_02 = nullptr;
-  }
-  if (!mAdcCHECKPin->init(PIN_ADC_CHECK_PIN, HalAdcAbstract::Mode::DMA)) {
-    LOG_ERROR("Common", "initADCReadSensorSTC0130: init mAdcCHECKPin failed");
-    delete mAdcCHECKPin;
-    mAdcCHECKPin = nullptr;
-  }
-}
-
-void processReadADCValueForSensor10Khz() {
-  // Old timer-based function, no longer used
 }
 
 // get ID

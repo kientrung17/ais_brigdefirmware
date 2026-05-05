@@ -2,6 +2,7 @@
 #include "loggermanager.h"
 #include "common/common.h"
 #include "task/powermanagertask.h"
+#include "message/controlstatusdatamessage.h"
 
 WifiManagerTask::WifiManagerTask(WiFiManagerAbstract *wifimanager, std::string nameTask, int numElementQueueSet)
     : TaskAbstract(nameTask, numElementQueueSet)
@@ -71,12 +72,18 @@ void WifiManagerTask::onQueueSetMessageProcess(OSBase::QueueHandle queue_sem)
     }
     else if (queue_sem == gQueuePowerDataToWifiTask)
     {
-        PowerManagerTask::SampleResult data;
-        if (mOSBase->queueReceive(gQueuePowerDataToWifiTask, &data, 0) == OSBase::QUEUE_OK)
+        ControlStatusDataMessage msg;
+        if (mOSBase->queueReceive(gQueuePowerDataToWifiTask, &msg, 0) == OSBase::QUEUE_OK)
         {
-            LOG_INFO("WifiManagerTask", "Received Power Data via Queue - V0: %.2fV, I0: %.2fA", 
-                     data.voltage[0], data.ampe[0]);
-            // Todo: Call MQTT publish here in the future
+            const AquaCtrl_ControlStatusData &data = msg.getControlStatusData();
+            LOG_INFO("WifiManagerTask",
+                     "Power Data: GW=%lu A1=%lu A2=%lu LostPhase=%lu LostElec=%lu",
+                     data.gatewayId,
+                     data.AmpeChannel1x100,
+                     data.AmpeChannel2x100,
+                     data.IsPowerLostPhare,
+                     data.IsLostElectric);
+            // Todo: packData -> MQTT publish
         }
     }
 }

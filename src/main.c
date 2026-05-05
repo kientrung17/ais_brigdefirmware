@@ -23,6 +23,4 @@ void app_main() {
   ESP_ERROR_CHECK(esp_timer_start_periodic(timer_handle, 1000)); // 1,000 µs
   vTaskDelay(pdMS_TO_TICKS(100));
 
-  // Read ADC SCT013
-  initADCReadSensorSTC0130();
 }

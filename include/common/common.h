@@ -14,8 +14,6 @@ extern "C" {
 #define MAX_TASK 10
 #define FREQUENCE_TIMER_READ_ADC 1000 // 1khz
 void processTimer100Hz();
-void initADCReadSensorSTC0130();
-void processReadADCValueForSensor10Khz();
 
 #ifdef __cplusplus
 }

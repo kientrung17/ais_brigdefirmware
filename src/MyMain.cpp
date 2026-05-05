@@ -10,7 +10,9 @@
 #include "task/powermanagertask.h"
 #include "task/relaymanagertask.h"
 #include "task/wifimanagertask.h"
+#include "task/adcreadertask.h"
 #include "taskmanager.h"
+#include "message/controlstatusdatamessage.h"
 
 #include "HAL/HAL_ESP32/esp32gpio.h"
 #include "HAL/HAL_ESP32/wifimanager.h"
@@ -42,6 +44,12 @@ HalGpioAbstract *mGpioCheckPhase{nullptr};
 HalGpioAbstract *mGpioCheckElectric{nullptr};
 HalGpioAbstract *mGpioChargePin{nullptr};
 
+// adc reader task
+#define ID_ADC_READER_TASK 5
+const std::string ADC_READER_TASKNAME = "AdcReaderTask";
+const uint8_t MaxElementQueueSetTaskAdcReader = 2;
+AdcReaderTask *mAdcReaderTask{nullptr};
+
 void StartWifiMamnagerTask(void const *argument) {
   if (mWifiManagerTask) {
     LOG_INFO("MyMain", "Start Task wifi");
@@ -69,6 +77,15 @@ void StartPowerManagerTask(void const *argument) {
   }
 }
 
+void StartAdcReaderTask(void const *argument) {
+  if (mAdcReaderTask) {
+    LOG_INFO("MyMain", "Start Task ADC Reader");
+    mAdcReaderTask->onStartProcess();
+  } else {
+    LOG_ERROR("MyMain", "Start Task ADC Reader Error");
+  }
+}
+
 void startAllTask() {
   LOG_INFO("MyMain",
            "************Start init system and run task****************");
@@ -86,7 +103,7 @@ void startAllTask() {
 
   // queue transmit data from power task to wifi task
   mWifiManagerTask->initregisterQueueToQueueset(&gQueuePowerDataToWifiTask,
-                                                 sizeof(PowerManagerTask::SampleResult), 10);
+                                                 sizeof(ControlStatusDataMessage), 10);
 
   ////////////// relay manager task
   auto relayMode = HalGpioAbstract::GpioMode::GPIO_MODE_INPUT_OUTPUT;
@@ -120,7 +137,10 @@ void startAllTask() {
   // queue receive ADC raw (2 channels)
   gPowerManagerTask->initregisterQueueToQueueset(
       &gQueueADCValueToPowerManageTask,
-      sizeof(uint16_t) * PowerManagerTask::NUM_CHANNEL, 100);
+      sizeof(PowerManagerTask::SampleResult), 10);
+
+  ////////////// adc reader task
+  mAdcReaderTask = new AdcReaderTask(ADC_READER_TASKNAME, MaxElementQueueSetTaskAdcReader);
 
   // init task
   if (mOSBase->taskCreate((char *)WIFI_MANAGER_TASKNAME.c_str(),
@@ -133,7 +153,11 @@ void startAllTask() {
       mOSBase->taskCreate((char *)POWER_MANAGER_TASKNAME.c_str(),
                           (TaskProc)StartPowerManagerTask,
                           OSBase::PRIORITY_NORMAL, 4096,
-                          ID_POWER_MANAGER_TASK)) {
+                          ID_POWER_MANAGER_TASK) &&
+      mOSBase->taskCreate((char *)ADC_READER_TASKNAME.c_str(),
+                          (TaskProc)StartAdcReaderTask,
+                          OSBase::PRIORITY_HIGH, 4096,
+                          ID_ADC_READER_TASK)) {
     LOG_INFO("MyMain", "Start All Task Success");
   } else {
     LOG_ERROR("MyMain", "Start All Task Error");

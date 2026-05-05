@@ -48,31 +48,20 @@ public:
     bool isLostElectric() const;
 
 private:
-    struct MovingAverage
-    {
-        std::array<uint16_t, AVG_WINDOW> buf{};
-        size_t idx{0};
-        size_t count{0};
-        uint32_t sum{0};
-        uint16_t push(uint16_t v);
-    };
-
-    void processSamples(const uint16_t samples[NUM_CHANNEL]);
+    void processSampleResult(const SampleResult &result);
     float toVoltage(uint16_t mv) const;
     void processManageChargePin();
 
 private:
-    MovingAverage mFilters[NUM_CHANNEL];
     SampleResult mResult{};
     uint32_t mCounter100Hz{0};
+    uint32_t mCounterChargePin{0};
     HalGpioAbstract *mGPIOLostPhase{nullptr};
     HalGpioAbstract *mGPIOLostElectric{nullptr};
     HalGpioAbstract *mGPIOChargePin{nullptr};
-    // check phase
+    float mVolPin{0.0f};
     bool mIsSystemLostPhase{false};
     bool mIsSystemLostElectric{false};
-    // vol pin
-    float mVolPin{0};
     uint8_t mCounterVerifyCharge {0};
     uint32_t mCounterCharge {0};
     bool mIsPinLow {false};

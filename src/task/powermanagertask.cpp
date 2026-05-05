@@ -1,5 +1,7 @@
 #include "task/powermanagertask.h"
 #include "loggermanager.h"
+#include "message/controlstatusdatamessage.h"
+#include "common/common.h"
 
 PowerManagerTask::PowerManagerTask(std::string nameTask, int numElementQueueSet, HalGpioAbstract *gpioLostPhase,
                                    HalGpioAbstract *gpioLostElectric, HalGpioAbstract *gpioChargePin)
@@ -29,20 +31,6 @@ bool PowerManagerTask::isLostPhase() const
 bool PowerManagerTask::isLostElectric() const
 {
     return mIsSystemLostElectric;
-}
-
-uint16_t PowerManagerTask::MovingAverage::push(uint16_t v)
-{
-    // Rolling average trên cửa sổ cố định.
-    sum -= buf[idx];
-    buf[idx] = v;
-    sum += v;
-    idx = (idx + 1) % AVG_WINDOW;
-    if (count < AVG_WINDOW)
-    {
-        ++count;
-    }
-    return static_cast<uint16_t>(sum / (count ? count : 1));
 }
 
 float PowerManagerTask::toVoltage(uint16_t mv) const
@@ -83,32 +71,33 @@ void PowerManagerTask::onTimer100HzProcess()
     }
 }
 
-void PowerManagerTask::processSamples(const uint16_t samples[NUM_CHANNEL])
+void PowerManagerTask::processSampleResult(const SampleResult &result)
 {
-    for (size_t i = 0; i < NUM_CHANNEL; ++i)
-    {
-        // get value and filter
-        uint16_t avg = mFilters[i].push(samples[i]);
-        mResult.avgRaw[i] = avg;
-        float vol = toVoltage(avg);
-        mResult.voltage[i] = vol;
+    mResult = result;
 
-        // convert to vol pin
-        if (i == INDEX_CHANNEL_CHECK_PIN)
-        {
-            mVolPin = mResult.voltage[i] * PARAM_CONVERT_TO_VOL_PIN;
-        }
-        // convert to ampe
-        else
-        {
-            mResult.ampe[i] = MAX_AMPLE_SENSOR * (std::abs(mResult.voltage[i] - VOL_AT_0A)) / (VOL_AT_MAX_A - VOL_AT_0A);
-        }
-    }
+    // ---- convert to vol pin (channel 2) ----
+    mVolPin = mResult.voltage[INDEX_CHANNEL_CHECK_PIN] * PARAM_CONVERT_TO_VOL_PIN;
 
-    // Gửi data sang WifiTask qua Queue
+    // ---- Build ControlStatusDataMessage (Protobuf) ----
+    // AmpeChannel1x100: Ampe channel 1 nhân 100 (tránh float trên App)
+    // Ví dụ: 1.23A -> 123
+    AquaCtrl_ControlStatusData statusData = AquaCtrl_ControlStatusData_init_zero;
+    statusData.gatewayId        = (uint32_t)(gDeviceID & 0xFFFFFFFF);
+    statusData.AmpeChannel1x100 = (uint32_t)(mResult.ampe[0] * 100.0f);
+    statusData.AmpeChannel2x100 = (uint32_t)(mResult.ampe[1] * 100.0f);
+    statusData.IsPowerLostPhare = mIsSystemLostPhase  ? 1u : 0u;
+    statusData.IsLostElectric   = mIsSystemLostElectric ? 1u : 0u;
+
+    LOG_DEBUG("PowerManagerTask",
+              "A1=%.2fA A2=%.2fA LostPhase=%d LostElec=%d",
+              mResult.ampe[0], mResult.ampe[1],
+              (int)mIsSystemLostPhase, (int)mIsSystemLostElectric);
+
+    // ---- Gửi sang WifiTask qua Queue ----
     if (gQueuePowerDataToWifiTask != 0)
     {
-        if (mOSBase->queueSend(gQueuePowerDataToWifiTask, &mResult) != OSBase::QUEUE_OK)
+        ControlStatusDataMessage msg(statusData);
+        if (mOSBase->queueSend(gQueuePowerDataToWifiTask, &msg) != OSBase::QUEUE_OK)
         {
             LOG_ERROR("PowerManagerTask", "queueSend gQueuePowerDataToWifiTask failed");
         }
@@ -119,10 +108,10 @@ void PowerManagerTask::onQueueSetMessageProcess(OSBase::QueueHandle queue_sem)
 {
     if (queue_sem == gQueueADCValueToPowerManageTask)
     {
-        uint16_t adcSamples[NUM_CHANNEL] = {0};
-        if (mOSBase->queueReceive(gQueueADCValueToPowerManageTask, adcSamples, 0) == OSBase::QUEUE_OK)
+        SampleResult incomingResult{};
+        if (mOSBase->queueReceive(gQueueADCValueToPowerManageTask, &incomingResult, 0) == OSBase::QUEUE_OK)
         {
-            processSamples(adcSamples);
+            processSampleResult(incomingResult);
         }
         else
         {
