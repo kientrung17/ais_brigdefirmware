@@ -189,7 +189,7 @@ void AdcReaderTask::adcBurstTask(void *arg)
     while (true)
     {
         self->computeAndSendRms();
-        // Nghỉ 200ms giữa các lần đọc RMS (5Hz update rate)
-        vTaskDelay(pdMS_TO_TICKS(200));
+        // Nghỉ 1 giây giữa các lần đọc RMS (1Hz update rate, đủ cho App)
+        vTaskDelay(pdMS_TO_TICKS(1000));
     }
 }

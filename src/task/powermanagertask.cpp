@@ -88,10 +88,14 @@ void PowerManagerTask::processSampleResult(const SampleResult &result)
     statusData.IsPowerLostPhare = mIsSystemLostPhase  ? 1u : 0u;
     statusData.IsLostElectric   = mIsSystemLostElectric ? 1u : 0u;
 
-    LOG_DEBUG("PowerManagerTask",
-              "A1=%.2fA A2=%.2fA LostPhase=%d LostElec=%d",
-              mResult.ampe[0], mResult.ampe[1],
-              (int)mIsSystemLostPhase, (int)mIsSystemLostElectric);
+    // Ghi log moi 10 lan nhan (khong spam uart)
+    static uint32_t logCounter = 0;
+    if (++logCounter % 10 == 0) {
+        LOG_DEBUG("PowerManagerTask",
+                  "A1=%.2fA A2=%.2fA LostPhase=%d LostElec=%d",
+                  mResult.ampe[0], mResult.ampe[1],
+                  (int)mIsSystemLostPhase, (int)mIsSystemLostElectric);
+    }
 
     // ---- Gửi sang WifiTask qua Queue ----
     if (gQueuePowerDataToWifiTask != 0)
