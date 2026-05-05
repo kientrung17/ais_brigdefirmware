@@ -19,7 +19,8 @@ public:
 		NONE = 0,
 		CONFIG_SYSTEM_MESSAGE = 2,
 		CONTROL_RELAY_MESAGE = 6,
-		MONITOR_AQUA_CONTROL_MESSAGE = 9
+		MONITOR_DATA_MESSAGE = 9,
+		CONTROL_STATUS_DATA_MESSAGE = 10
 	};
 	AbstractMessage(MessageId id);
 	virtual ~AbstractMessage();
