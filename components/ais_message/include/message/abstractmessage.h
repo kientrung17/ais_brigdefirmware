@@ -1,5 +1,5 @@
 /*
- * innermessage.h
+ * abstractmessage.h
  *
  *  Created on: May 17, 2024
  *      Author: canhpn2
@@ -7,7 +7,8 @@
 
 #ifndef MESSAGEABS_MESSAGE_INC_INNERMESSAGE_H_
 #define MESSAGEABS_MESSAGE_INC_INNERMESSAGE_H_
-#include "stdint.h"
+
+#include <cstdint>
 #include <cstring>
 #include "codecmessage.h"
 
@@ -18,7 +19,7 @@ public:
 	{
 		NONE = 0,
 		CONFIG_SYSTEM_MESSAGE = 2,
-		CONTROL_RELAY_MESAGE = 6,
+		CONTROL_RELAY_MESSAGE = 6,
 		MONITOR_DATA_MESSAGE = 9,
 		CONTROL_STATUS_DATA_MESSAGE = 10
 	};
@@ -36,4 +37,4 @@ protected:
 	MessageId mMessageId { MessageId::NONE };
 };
 
-#endif /* SUBMODULE_VTJC2_FRAMEWORK_MESSAGEABS_MESSAGE_INC_INNERMESSAGE_H_ */
+#endif

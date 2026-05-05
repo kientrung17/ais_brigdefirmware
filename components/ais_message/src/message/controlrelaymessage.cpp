@@ -3,17 +3,17 @@
 #include "protobuf/pb_encode.h"
 
 ControlRelayMessage::ControlRelayMessage()
-    : AbstractMessage(MessageId::CONTROL_RELAY_MESAGE)
+    : AbstractMessage(MessageId::CONTROL_RELAY_MESSAGE)
 {
 }
 
 ControlRelayMessage::ControlRelayMessage(AquaCtrl_ControlRelayData control)
-    : AbstractMessage(MessageId::CONTROL_RELAY_MESAGE), mControlRelayMessage(control)
+    : AbstractMessage(MessageId::CONTROL_RELAY_MESSAGE), mControlRelayMessage(control)
 {
 }
 
 ControlRelayMessage::ControlRelayMessage(int channel, bool status)
-    : AbstractMessage(MessageId::CONTROL_RELAY_MESAGE)
+    : AbstractMessage(MessageId::CONTROL_RELAY_MESSAGE)
 {
     if (channel < MessageCommon::MAX_NUM_RELAY)
     {
