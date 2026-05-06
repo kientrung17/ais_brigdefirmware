@@ -158,6 +158,7 @@ void startAllTask() {
   mRelayManagerTask = new RelayManagerTask(RELAY_MANAGER_TASKNAME,
                                            MaxElementQueueSetTaskRelayManager,
                                            gGpioRelay, nullptr);
+  mRelayManagerTask->initregisterQueueToQueueset(&gQueueRelayControlCmd, sizeof(ControlRelayMessage), 10);
 
   ////////////// power manager task
   mGpioCheckPhase = new HalEsp32Gpio(

@@ -51,7 +51,15 @@ void RelayManagerTask::onTimer100HzProcess()
 
 void RelayManagerTask::onQueueSetMessageProcess(OSBase::QueueHandle queue_sem)
 {
-    (void)queue_sem;
+    if (queue_sem == gQueueRelayControlCmd)
+    {
+        ControlRelayMessage msg;
+        if (mOSBase->queueReceive(gQueueRelayControlCmd, &msg, 0) == OSBase::QUEUE_OK)
+        {
+            LOG_INFO("RelayManagerTask", "Received command from MQTT, processing...");
+            processControlRelayMessage(msg.getControlRelayMessage());
+        }
+    }
 }
 
 void RelayManagerTask::onInitProcess()
