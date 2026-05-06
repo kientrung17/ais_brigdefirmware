@@ -205,13 +205,10 @@ void AdcReaderTask::computeAndSendRms() {
       (float)mean1, (float)mean2, rms_mv1, rms_mv2, mSmoothedAmpe1,
       mSmoothedAmpe2, count);
 
-  if (gQueueADCValueToPowerManageTask != 0) {
-    PowerManagerTask::SampleResult result{};
-    result.ampe[0] = mSmoothedAmpe1;
-    result.ampe[1] = mSmoothedAmpe2;
-    result.voltage[2] = avgCheckMv;
-    mOSBase->queueSend(gQueueADCValueToPowerManageTask, &result);
-  }
+  // Store to Shared Data Store directly (Lock-free)
+  gSharedData.ampe_ch1.store(mSmoothedAmpe1, std::memory_order_relaxed);
+  gSharedData.ampe_ch2.store(mSmoothedAmpe2, std::memory_order_relaxed);
+  gSharedData.voltage_pin.store(avgCheckMv, std::memory_order_relaxed);
 }
 
 // ============================================================

@@ -26,6 +26,7 @@ void processTimer100Hz();
 #include "OSFreeRTOS.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/event_groups.h"
+#include <atomic>
 #include "configsystemmessage.h"
 #include "flashmanager.h"
 #include "loggermanager.h"
@@ -68,10 +69,15 @@ extern OSBase *mOSBase;
 // relay manager task
 // wifi task
 extern OSBase::SemHandle gSemInputBtnConfigFromRelayTaskToWifiTask;
-// SCT013 task
-extern OSBase::QueueHandle gQueueADCValueToPowerManageTask;
-// queue transmit data from power task to wifi task for mqtt
-extern OSBase::QueueHandle gQueuePowerDataToWifiTask;
+// Shared Data Store (Lock-free)
+struct SharedDataStore {
+    std::atomic<float> ampe_ch1{0.0f};
+    std::atomic<float> ampe_ch2{0.0f};
+    std::atomic<float> voltage_pin{0.0f};
+    std::atomic<bool> is_lost_phase{false};
+    std::atomic<bool> is_lost_electric{false};
+};
+extern SharedDataStore gSharedData;
 
 // E-Stop EventGroup for ultra-low latency emergency relay cutoff
 extern EventGroupHandle_t gEmergencyEventGroup;

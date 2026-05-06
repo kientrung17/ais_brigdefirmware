@@ -25,10 +25,9 @@
 // wifi
 #define ID_WIFI_MANAGER_TASK 1
 const std::string WIFI_MANAGER_TASKNAME = "WifiManagerTask";
-// FIX: QueueSet size PHẢI >= tổng kích thước TẤT CẢ queue/sem đăng ký vào:
-// - 1 (sem 100Hz) + 1 (sem config btn) + 10 (gQueuePowerDataToWifiTask) = 12
-// Dùng 16 để có biên an toàn, tránh assert crash sau 1-2 phút chạy.
-const uint8_t MaxElementQueueSetTaskWifiManager = 16;
+// - 1 (sem 100Hz) + 1 (sem config btn) = 2
+// Dùng 4 để có biên an toàn.
+const uint8_t MaxElementQueueSetTaskWifiManager = 4;
 WifiManagerTask *mWifiManagerTask{nullptr};
 WiFiManagerAbstract *mWifiManagerAbs{nullptr};
 
@@ -44,9 +43,9 @@ RelayManagerTask *mRelayManagerTask{nullptr};
 #define ID_POWER_MANAGER_TASK 4
 const std::string POWER_MANAGER_TASKNAME = "PowerManagerTask";
 // FIX: QueueSet size PHẢI >= tổng kích thước TẤT CẢ queue/sem đăng ký vào:
-// - 1 (sem 100Hz) + 10 (gQueueADCValueToPowerManageTask) = 11
-// Dùng 15 để có biên an toàn.
-const uint8_t MaxElementQueueSetTaskPowerManager = 15;
+// - 1 (sem 100Hz)
+// Dùng 2 để có biên an toàn.
+const uint8_t MaxElementQueueSetTaskPowerManager = 2;
 HalGpioAbstract *mGpioCheckPhase{nullptr};
 HalGpioAbstract *mGpioCheckElectric{nullptr};
 HalGpioAbstract *mGpioChargePin{nullptr};
@@ -107,9 +106,7 @@ void startAllTask() {
   mWifiManagerTask->initRegisterSemaphoreToQueueset(
       &gSemInputBtnConfigFromRelayTaskToWifiTask);
 
-  // queue transmit data from power task to wifi task
-  mWifiManagerTask->initregisterQueueToQueueset(
-      &gQueuePowerDataToWifiTask, sizeof(ControlStatusDataMessage), 10);
+  // queue transmit data from power task to wifi task (REMOVED - Using SharedDataStore)
 
   ////////////// relay manager task
   auto relayMode = HalGpioAbstract::GpioMode::GPIO_MODE_INPUT_OUTPUT;
@@ -140,10 +137,7 @@ void startAllTask() {
   gPowerManagerTask = new PowerManagerTask(
       POWER_MANAGER_TASKNAME, MaxElementQueueSetTaskPowerManager,
       mGpioCheckPhase, mGpioCheckElectric, mGpioChargePin);
-  // queue receive ADC raw (2 channels)
-  gPowerManagerTask->initregisterQueueToQueueset(
-      &gQueueADCValueToPowerManageTask, sizeof(PowerManagerTask::SampleResult),
-      10);
+  // queue receive ADC raw (2 channels) - REMOVED, using SharedDataStore
 
   ////////////// adc reader task
   mAdcReaderTask =

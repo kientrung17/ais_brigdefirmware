@@ -21,9 +21,8 @@ const System_ConfigSystemData defaultConfig = {.userSystemID = "sys000001",
 OSBase *mOSBase;
 // wifi task
 OSBase::SemHandle gSemInputBtnConfigFromRelayTaskToWifiTask;
-// power manager task
-OSBase::QueueHandle gQueueADCValueToPowerManageTask;
-OSBase::QueueHandle gQueuePowerDataToWifiTask;
+// Shared Data Store
+SharedDataStore gSharedData;
 
 // E-Stop EventGroup
 EventGroupHandle_t gEmergencyEventGroup;

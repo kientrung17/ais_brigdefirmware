@@ -93,8 +93,8 @@ void RelayManagerTask::onInitProcess()
     //     mTouchSensor[i]->setDebounce(NUM_SAMPLE_DETECT_ON_OFF_TOUCH_SENSOR, NUM_SAMPLE_DETECT_ON_OFF_TOUCH_SENSOR); // Yêu cầu 5 mẫu liên tiếp để thay đổi trạng thái
     // }
 
-    // Spawn emergency E-Stop listener task with highest priority
-    BaseType_t ret = xTaskCreate(emergencyTask, "EStopTask", 2048, this, configMAX_PRIORITIES - 1, nullptr);
+    // Spawn emergency E-Stop listener task with highest priority (4096 bytes stack)
+    BaseType_t ret = xTaskCreate(emergencyTask, "EStopTask", 4096, this, configMAX_PRIORITIES - 1, nullptr);
     if (ret != pdPASS) {
         LOG_ERROR("RelayManagerTask", "Failed to create EStopTask (ret=%d)", (int)ret);
     } else {

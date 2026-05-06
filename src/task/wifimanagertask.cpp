@@ -1,8 +1,7 @@
 #include "task/wifimanagertask.h"
 #include "loggermanager.h"
 #include "common/common.h"
-#include "task/powermanagertask.h"
-#include "message/controlstatusdatamessage.h"
+
 
 WifiManagerTask::WifiManagerTask(WiFiManagerAbstract *wifimanager, std::string nameTask, int numElementQueueSet)
     : TaskAbstract(nameTask, numElementQueueSet)
@@ -70,22 +69,7 @@ void WifiManagerTask::onQueueSetMessageProcess(OSBase::QueueHandle queue_sem)
         // change mode wifi to AP + STA
         // changeModeWifiToAPSta();
     }
-    else if (queue_sem == gQueuePowerDataToWifiTask)
-    {
-        ControlStatusDataMessage msg;
-        if (mOSBase->queueReceive(gQueuePowerDataToWifiTask, &msg, 0) == OSBase::QUEUE_OK)
-        {
-            const AquaCtrl_ControlStatusData &data = msg.getControlStatusData();
-            LOG_INFO("WifiManagerTask",
-                     "Power Data: GW=%lu A1=%lu A2=%lu LostPhase=%lu LostElec=%lu",
-                     data.gatewayId,
-                     data.AmpeChannel1x100,
-                     data.AmpeChannel2x100,
-                     data.IsPowerLostPhare,
-                     data.IsLostElectric);
-            // Todo: packData -> MQTT publish
-        }
-    }
+
 }
 
 // init config wifi infor

@@ -43,17 +43,16 @@ public:
     void onQueueSetMessageProcess(OSBase::QueueHandle queue_sem) override;
     void onInitProcess() override;
 
-    const SampleResult &latest() const;
+
     bool isLostPhase() const;
     bool isLostElectric() const;
 
 private:
-    void processSampleResult(const SampleResult &result);
     float toVoltage(uint16_t mv) const;
     void processManageChargePin();
 
 private:
-    SampleResult mResult{};
+
     uint32_t mCounter100Hz{0};
     uint32_t mCounterChargePin{0};
     HalGpioAbstract *mGPIOLostPhase{nullptr};
