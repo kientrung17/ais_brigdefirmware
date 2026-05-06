@@ -53,12 +53,21 @@ void PowerManagerTask::onTimer100HzProcess()
         // reserved for future monitor/diagnostic hooks.
     }
 
+    // CHECK LOST PHASE CONTINUOUSLY FOR SAFETY (100Hz)
+    if (mGPIOLostPhase)
+    {
+        mIsSystemLostPhase = (mGPIOLostPhase->Hal_Gpio_ReadPin() == STATUS_GPIO_LOST_PHASE);
+        
+        // --- E-STOP TRIGGER: LOST PHASE ---
+        if (mIsSystemLostPhase) {
+            if (mOSBase->isStarted() && gEmergencyEventGroup != nullptr) {
+                xEventGroupSetBits(gEmergencyEventGroup, BIT_ESTOP_LOST_PHASE);
+            }
+        }
+    }
+
     if (mCounter100Hz % INTERVAL_CHECK_WARNING_10S == 0) // 10s
     {
-        if (mGPIOLostPhase)
-        {
-            mIsSystemLostPhase = (mGPIOLostPhase->Hal_Gpio_ReadPin() == STATUS_GPIO_LOST_PHASE);
-        }
         if (mGPIOLostElectric)
         {
             mIsSystemLostElectric = (mGPIOLostElectric->Hal_Gpio_ReadPin() == STATUS_GPIO_LOST_ELECTRIC);

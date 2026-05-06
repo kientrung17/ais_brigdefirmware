@@ -290,7 +290,7 @@ void RelayManagerTask::emergencyTask(void *arg)
             {
                 if (self->mRelay[i])
                 {
-                    self->mRelay[i]->Hal_Gpio_WritePin(HalGpioAbstract::GPIO_PIN_RESET);
+                    self->mRelay[i]->Hal_Gpio_WritePin(HalGpioAbstract::GpioPinState::GPIO_PIN_RESET);
                 }
             }
         }

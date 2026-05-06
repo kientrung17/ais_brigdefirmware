@@ -26,7 +26,7 @@ OSBase::QueueHandle gQueueADCValueToPowerManageTask;
 OSBase::QueueHandle gQueuePowerDataToWifiTask;
 
 // E-Stop EventGroup
-OSBase::EvtHandle gEmergencyEventGroup;
+EventGroupHandle_t gEmergencyEventGroup;
 
 // relay gpio for webserver control
 HalGpioAbstract *gGpioRelay[MessageCommon::MAX_NUM_RELAY]{};
@@ -65,8 +65,8 @@ void initSystem() {
   // get OSBase
   mOSBase = TaskManager::getInstance()->getOSBase();
   
-  // init E-Stop EventGroup
-  gEmergencyEventGroup = mOSBase->evtCreate();
+  // init E-Stop EventGroup using FreeRTOS API
+  gEmergencyEventGroup = xEventGroupCreate();
 
   gConfigSystem = ConfigSystemMessage(defaultConfig);
   LOG_INFO("MyMain", "Default Config");

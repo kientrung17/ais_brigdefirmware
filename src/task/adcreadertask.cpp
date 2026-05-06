@@ -180,6 +180,13 @@ void AdcReaderTask::computeAndSendRms() {
   float ampe1 = rms_mv1 * AMPS_PER_MV;
   float ampe2 = rms_mv2 * AMPS_PER_MV;
 
+  // --- E-STOP TRIGGER: OVERLOAD ---
+  if (ampe1 > 15.0f || ampe2 > 15.0f) {
+      if (mOSBase->isStarted() && gEmergencyEventGroup != nullptr) {
+          xEventGroupSetBits(gEmergencyEventGroup, BIT_ESTOP_OVERLOAD);
+      }
+  }
+
   if (ampe1 < NOISE_FLOOR)
     ampe1 = 0.0f;
   if (ampe2 < NOISE_FLOOR)

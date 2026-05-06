@@ -24,6 +24,8 @@ void processTimer100Hz();
 
 #include "HAL_ESP32/esp32adc.h"
 #include "OSFreeRTOS.h"
+#include "freertos/FreeRTOS.h"
+#include "freertos/event_groups.h"
 #include "configsystemmessage.h"
 #include "flashmanager.h"
 #include "loggermanager.h"
@@ -72,7 +74,7 @@ extern OSBase::QueueHandle gQueueADCValueToPowerManageTask;
 extern OSBase::QueueHandle gQueuePowerDataToWifiTask;
 
 // E-Stop EventGroup for ultra-low latency emergency relay cutoff
-extern OSBase::EvtHandle gEmergencyEventGroup;
+extern EventGroupHandle_t gEmergencyEventGroup;
 #define BIT_ESTOP_OVERLOAD   (1 << 0)
 #define BIT_ESTOP_LOST_PHASE (1 << 1)
 
