@@ -12,6 +12,7 @@
 #include "task/powermanagertask.h"
 #include "task/relaymanagertask.h"
 #include "task/wifimanagertask.h"
+#include "task/configsystemtask.h"
 #include "taskmanager.h"
 
 
@@ -25,6 +26,12 @@
 // wifi
 #define ID_WIFI_MANAGER_TASK 1
 const std::string WIFI_MANAGER_TASKNAME = "WifiManagerTask";
+
+// config system
+#define ID_CONFIG_SYSTEM_TASK 2
+const std::string CONFIG_SYSTEM_TASKNAME = "ConfigSystemTask";
+const uint8_t MaxElementQueueSetTaskConfigSystem = 2;
+ConfigSystemTask *mConfigSystemTask{nullptr};
 // - 1 (sem 100Hz) + 1 (sem config btn) = 2
 // Dùng 4 để có biên an toàn.
 const uint8_t MaxElementQueueSetTaskWifiManager = 4;
@@ -62,6 +69,15 @@ void StartWifiMamnagerTask(void const *argument) {
     mWifiManagerTask->onStartProcess();
   } else {
     LOG_ERROR("MyMain", "Start Task Wifi Error");
+  }
+}
+
+void StartConfigSystemTask(void const *argument) {
+  if (mConfigSystemTask) {
+    LOG_INFO("MyMain", "Start Task Config System");
+    mConfigSystemTask->onStartProcess();
+  } else {
+    LOG_ERROR("MyMain", "Start Task Config System Error");
   }
 }
 
@@ -143,6 +159,9 @@ void startAllTask() {
   mAdcReaderTask =
       new AdcReaderTask(ADC_READER_TASKNAME, MaxElementQueueSetTaskAdcReader);
 
+  ////////////// config system task
+  mConfigSystemTask = new ConfigSystemTask(CONFIG_SYSTEM_TASKNAME, MaxElementQueueSetTaskConfigSystem);
+
   // init task
   if (mOSBase->taskCreate((char *)WIFI_MANAGER_TASKNAME.c_str(),
                           (TaskProc)StartWifiMamnagerTask,
@@ -157,7 +176,10 @@ void startAllTask() {
                           ID_POWER_MANAGER_TASK) &&
       mOSBase->taskCreate((char *)ADC_READER_TASKNAME.c_str(),
                           (TaskProc)StartAdcReaderTask, OSBase::PRIORITY_HIGH,
-                          4096, ID_ADC_READER_TASK)) {
+                          4096, ID_ADC_READER_TASK) &&
+      mOSBase->taskCreate((char *)CONFIG_SYSTEM_TASKNAME.c_str(),
+                          (TaskProc)StartConfigSystemTask, OSBase::PRIORITY_NORMAL,
+                          4096, ID_CONFIG_SYSTEM_TASK)) {
     LOG_INFO("MyMain", "Start All Task Success");
   } else {
     LOG_ERROR("MyMain", "Start All Task Error");

@@ -84,3 +84,70 @@ bool StoreFlashManager::saveRelayInforToFlash(ControlRelayMessage msg, uint8_t r
     return true;
 }
 
+bool StoreFlashManager::saveConfigToFlash(ConfigSystemMessage msg)
+{
+    CodecMessage codecMsg;
+    auto retPack = msg.packData(&codecMsg);
+    if (!retPack)
+    {
+        LOG_ERROR("StoreFlashManager", "ConfigSystemMessage pack data error");
+        return false;
+    }
+    uint16_t msgLength = codecMsg.mMsgDataLength;
+    if (msgLength > 0)
+    {
+        bool ret = gFlashManager->writeBlob(KEY_SYSTEM_CONFIG, codecMsg.mDataRaw, msgLength);
+        if (ret == false)
+        {
+            LOG_ERROR("StoreFlashManager", "saveConfigToFlash write data system to nvs failed");
+            return false;
+        }
+        else
+        {
+            LOG_INFO("StoreFlashManager", "saveConfigToFlash write data system to nvs success");
+        }
+    }
+    else
+    {
+        LOG_ERROR("StoreFlashManager", "saveConfigToFlash encode error");
+        return false;
+    }
+    return true;
+}
+
+bool StoreFlashManager::readConfigFromFlash(ConfigSystemMessage *msg)
+{
+    if (msg == nullptr)
+    {
+        return false;
+    }
+    size_t lengthDataReaded = 0;
+    if (gFlashManager == nullptr)
+    {
+        LOG_ERROR("StoreFlashManager", "gFlashManager is null");
+        return false;
+    }
+    CodecMessage msgCodec;
+    bool ret = gFlashManager->readBlob(KEY_SYSTEM_CONFIG, msgCodec.mDataRaw, MAX_SYSTEM_CONFIG_SIZE, lengthDataReaded);
+    if (ret == false)
+    {
+        LOG_ERROR("StoreFlashManager", "Read system config from nvs failed");
+        return false;
+    }
+    else
+    {
+        msgCodec.mMsgDataLength = lengthDataReaded;
+    }
+    if (msg->unpackData(&msgCodec))
+    {
+        LOG_INFO("StoreFlashManager", "Read system config success");
+        return true;
+    }
+    else
+    {
+        LOG_ERROR("StoreFlashManager", "Read system config unpack failed");
+        return false;
+    }
+    return false;
+}
+

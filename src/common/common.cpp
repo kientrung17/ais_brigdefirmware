@@ -3,6 +3,7 @@
 #include "esp_mac.h"
 #include "esp_task_wdt.h"
 #include "flashmanager.h"
+#include "common/storeflashmanager.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "taskmanager.h"
@@ -26,6 +27,11 @@ SharedDataStore gSharedData;
 
 // E-Stop EventGroup
 EventGroupHandle_t gEmergencyEventGroup;
+EventGroupHandle_t gEventGroupNetworkState;
+
+// IPC Queues
+OSBase::QueueHandle gQueuePowerDataToMqtt;
+OSBase::QueueHandle gQueueRelayControlCmd;
 
 // relay gpio for webserver control
 HalGpioAbstract *gGpioRelay[MessageCommon::MAX_NUM_RELAY]{};
@@ -66,9 +72,20 @@ void initSystem() {
   
   // init E-Stop EventGroup using FreeRTOS API
   gEmergencyEventGroup = xEventGroupCreate();
+  gEventGroupNetworkState = xEventGroupCreate();
+
+  // init IPC Queues
+  gQueuePowerDataToMqtt = mOSBase->queueCreate(10, sizeof(ControlStatusDataMessage));
+  gQueueRelayControlCmd = mOSBase->queueCreate(10, sizeof(ControlRelayMessage));
 
   gConfigSystem = ConfigSystemMessage(defaultConfig);
-  LOG_INFO("MyMain", "Default Config");
+  // Thu tai cau hinh tu Flash NVS
+  if (StoreFlashManager::getInstance()->readConfigFromFlash(&gConfigSystem)) {
+    LOG_INFO("MyMain", "Loaded custom config from Flash NVS successfully!");
+  } else {
+    LOG_INFO("MyMain", "No custom config found, using default config");
+  }
+  
   const auto &activeConfig = gConfigSystem.getConfigSystem();
   LOG_INFO("MyMain", "UserSystemID: %s  ", activeConfig.userSystemID);
   LOG_INFO("MyMain", "Ssid: %s  ", activeConfig.ssidWifiSta);

@@ -6,6 +6,8 @@
 class UdpAbstract
 {
 public:
+    virtual ~UdpAbstract() {}
+
     // Khởi tạo UDP
     virtual void init() = 0;
 

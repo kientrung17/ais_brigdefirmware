@@ -49,11 +49,12 @@ void WifiManagerTask::onTimer100HzProcess()
             if (mIsWifiStaConnected == true)
             {
                 LOG_INFO("WifiManagerTask", "Wifi sta connected");
-                // wifi connected
+                xEventGroupSetBits(gEventGroupNetworkState, BIT_WIFI_CONNECTED);
             }
             else
             {
                 LOG_INFO("WifiManagerTask", "Wifi sta disconnected");
+                xEventGroupClearBits(gEventGroupNetworkState, BIT_WIFI_CONNECTED);
             }
         }
     }

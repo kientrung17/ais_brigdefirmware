@@ -28,6 +28,8 @@ void processTimer100Hz();
 #include "freertos/event_groups.h"
 #include <atomic>
 #include "configsystemmessage.h"
+#include "message/controlstatusdatamessage.h"
+#include "message/controlrelaymessage.h"
 #include "flashmanager.h"
 #include "loggermanager.h"
 #include "message/messagecommon.h"
@@ -83,6 +85,14 @@ extern SharedDataStore gSharedData;
 extern EventGroupHandle_t gEmergencyEventGroup;
 #define BIT_ESTOP_OVERLOAD   (1 << 0)
 #define BIT_ESTOP_LOST_PHASE (1 << 1)
+
+extern EventGroupHandle_t gEventGroupNetworkState;
+#define BIT_WIFI_CONNECTED (1 << 0)
+#define BIT_LAN_CONNECTED  (1 << 1)
+
+// IPC Queues
+extern OSBase::QueueHandle gQueuePowerDataToMqtt;
+extern OSBase::QueueHandle gQueueRelayControlCmd;
 
 // sys infor
 class HalGpioAbstract;
