@@ -47,7 +47,19 @@ void PowerManagerTask::onTimer100HzProcess()
     mCounter100Hz++;
     if (mCounter100Hz % INTERVAL_SEND_MONITOR_1Hz == 0)
     {
-        // reserved for future monitor/diagnostic hooks.
+        // Gửi gói tin giám sát trạng thái điện năng sang MQTT Queue
+        AquaCtrl_ControlStatusData statusData;
+        statusData.gatewayId = (uint32_t)(gDeviceID & 0xFFFFFFFF);
+        statusData.AmpeChannel1x100 = (uint32_t)(gSharedData.ampe_ch1.load(std::memory_order_relaxed) * 100.0f);
+        statusData.AmpeChannel2x100 = (uint32_t)(gSharedData.ampe_ch2.load(std::memory_order_relaxed) * 100.0f);
+        statusData.IsPowerLostPhare = mIsSystemLostPhase ? 1 : 0;
+        statusData.IsLostElectric = mIsSystemLostElectric ? 1 : 0;
+
+        ControlStatusDataMessage msg(statusData);
+        // Gửi đi, không block (timeout=0)
+        if (mOSBase->queueSend(gQueuePowerDataToMqtt, &msg) != OSBase::QUEUE_OK) {
+            LOG_ERROR("PowerManagerTask", "Failed to send power data to MQTT queue");
+        }
     }
 
     // CHECK LOST PHASE CONTINUOUSLY FOR SAFETY (100Hz)
