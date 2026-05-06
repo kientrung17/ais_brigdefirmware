@@ -43,6 +43,8 @@ private:
 
     void updateStateMachineTouchSensor10Hz(uint8_t channel);
 
+    static void emergencyTask(void *arg);
+
 private:
     uint32_t mCounter100Hz{0};
     HalGpioAbstract *mRelay[MessageCommon::MAX_NUM_RELAY];

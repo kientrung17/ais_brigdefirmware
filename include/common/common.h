@@ -71,6 +71,11 @@ extern OSBase::QueueHandle gQueueADCValueToPowerManageTask;
 // queue transmit data from power task to wifi task for mqtt
 extern OSBase::QueueHandle gQueuePowerDataToWifiTask;
 
+// E-Stop EventGroup for ultra-low latency emergency relay cutoff
+extern OSBase::EvtHandle gEmergencyEventGroup;
+#define BIT_ESTOP_OVERLOAD   (1 << 0)
+#define BIT_ESTOP_LOST_PHASE (1 << 1)
+
 // sys infor
 class HalGpioAbstract;
 class PowerManagerTask;

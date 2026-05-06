@@ -92,6 +92,14 @@ void RelayManagerTask::onInitProcess()
     //     mTouchSensor[i]->setRelativeThresholdPercent(RELATIVE_THRESHOULD_PERCENT);                           // ON khi giá trị < baseline - RELATIVE_THRESHOULD_PERCENT%
     //     mTouchSensor[i]->setDebounce(NUM_SAMPLE_DETECT_ON_OFF_TOUCH_SENSOR, NUM_SAMPLE_DETECT_ON_OFF_TOUCH_SENSOR); // Yêu cầu 5 mẫu liên tiếp để thay đổi trạng thái
     // }
+
+    // Spawn emergency E-Stop listener task with highest priority
+    BaseType_t ret = xTaskCreate(emergencyTask, "EStopTask", 2048, this, configMAX_PRIORITIES - 1, nullptr);
+    if (ret != pdPASS) {
+        LOG_ERROR("RelayManagerTask", "Failed to create EStopTask (ret=%d)", (int)ret);
+    } else {
+        LOG_INFO("RelayManagerTask", "EStopTask spawned OK");
+    }
 }
 
 void RelayManagerTask::processControlRelayMessage(const AquaCtrl_ControlRelayData &control)
@@ -252,5 +260,39 @@ void RelayManagerTask::updateStateMachineTouchSensor10Hz(uint8_t channel)
     {
         break;
     }
+    }
+}
+
+void RelayManagerTask::emergencyTask(void *arg)
+{
+    RelayManagerTask *self = static_cast<RelayManagerTask *>(arg);
+
+    LOG_INFO("RelayManagerTask", "EStopTask listening for E-Stop events...");
+
+    while (true)
+    {
+        // Wait forever (portMAX_DELAY) for any E-Stop bit. 
+        // This unblocks immediately when an event is posted, giving 0ms latency.
+        EventBits_t bits = xEventGroupWaitBits(
+            gEmergencyEventGroup,
+            BIT_ESTOP_OVERLOAD | BIT_ESTOP_LOST_PHASE,
+            pdTRUE,  // Clear bits on exit
+            pdFALSE, // Wait for ANY bit (not ALL bits)
+            portMAX_DELAY
+        );
+
+        if (bits != 0)
+        {
+            LOG_ERROR("RelayManagerTask", "!!! EMERGENCY STOP TRIGGERED !!! (Bits: 0x%08X)", (unsigned int)bits);
+            
+            // Hard cut all relays
+            for (int i = 0; i < MessageCommon::MAX_NUM_RELAY; ++i)
+            {
+                if (self->mRelay[i])
+                {
+                    self->mRelay[i]->Hal_Gpio_WritePin(HalGpioAbstract::GPIO_PIN_RESET);
+                }
+            }
+        }
     }
 }

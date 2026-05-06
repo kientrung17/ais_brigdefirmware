@@ -7,12 +7,13 @@
 
 #include "myMain.h"
 #include "logger/loggermanager.h"
+#include "message/controlstatusdatamessage.h"
+#include "task/adcreadertask.h"
 #include "task/powermanagertask.h"
 #include "task/relaymanagertask.h"
 #include "task/wifimanagertask.h"
-#include "task/adcreadertask.h"
 #include "taskmanager.h"
-#include "message/controlstatusdatamessage.h"
+
 
 #include "HAL/HAL_ESP32/esp32gpio.h"
 #include "HAL/HAL_ESP32/wifimanager.h"
@@ -24,7 +25,10 @@
 // wifi
 #define ID_WIFI_MANAGER_TASK 1
 const std::string WIFI_MANAGER_TASKNAME = "WifiManagerTask";
-const uint8_t MaxElementQueueSetTaskWifiManager = 5;
+// FIX: QueueSet size PHẢI >= tổng kích thước TẤT CẢ queue/sem đăng ký vào:
+// - 1 (sem 100Hz) + 1 (sem config btn) + 10 (gQueuePowerDataToWifiTask) = 12
+// Dùng 16 để có biên an toàn, tránh assert crash sau 1-2 phút chạy.
+const uint8_t MaxElementQueueSetTaskWifiManager = 16;
 WifiManagerTask *mWifiManagerTask{nullptr};
 WiFiManagerAbstract *mWifiManagerAbs{nullptr};
 
@@ -39,7 +43,10 @@ RelayManagerTask *mRelayManagerTask{nullptr};
 // power manager task
 #define ID_POWER_MANAGER_TASK 4
 const std::string POWER_MANAGER_TASKNAME = "PowerManagerTask";
-const uint8_t MaxElementQueueSetTaskPowerManager = 5;
+// FIX: QueueSet size PHẢI >= tổng kích thước TẤT CẢ queue/sem đăng ký vào:
+// - 1 (sem 100Hz) + 10 (gQueueADCValueToPowerManageTask) = 11
+// Dùng 15 để có biên an toàn.
+const uint8_t MaxElementQueueSetTaskPowerManager = 15;
 HalGpioAbstract *mGpioCheckPhase{nullptr};
 HalGpioAbstract *mGpioCheckElectric{nullptr};
 HalGpioAbstract *mGpioChargePin{nullptr};
@@ -94,16 +101,15 @@ void startAllTask() {
   // init task object
   ////////////////////// wifi
   mWifiManagerAbs = new WiFiManagerESP32();
-  mWifiManagerTask =
-      new WifiManagerTask(mWifiManagerAbs, WIFI_MANAGER_TASKNAME,
-                          MaxElementQueueSetTaskWifiManager);
+  mWifiManagerTask = new WifiManagerTask(mWifiManagerAbs, WIFI_MANAGER_TASKNAME,
+                                         MaxElementQueueSetTaskWifiManager);
   // register sem
   mWifiManagerTask->initRegisterSemaphoreToQueueset(
       &gSemInputBtnConfigFromRelayTaskToWifiTask);
 
   // queue transmit data from power task to wifi task
-  mWifiManagerTask->initregisterQueueToQueueset(&gQueuePowerDataToWifiTask,
-                                                 sizeof(ControlStatusDataMessage), 10);
+  mWifiManagerTask->initregisterQueueToQueueset(
+      &gQueuePowerDataToWifiTask, sizeof(ControlStatusDataMessage), 10);
 
   ////////////// relay manager task
   auto relayMode = HalGpioAbstract::GpioMode::GPIO_MODE_INPUT_OUTPUT;
@@ -136,11 +142,12 @@ void startAllTask() {
       mGpioCheckPhase, mGpioCheckElectric, mGpioChargePin);
   // queue receive ADC raw (2 channels)
   gPowerManagerTask->initregisterQueueToQueueset(
-      &gQueueADCValueToPowerManageTask,
-      sizeof(PowerManagerTask::SampleResult), 10);
+      &gQueueADCValueToPowerManageTask, sizeof(PowerManagerTask::SampleResult),
+      10);
 
   ////////////// adc reader task
-  mAdcReaderTask = new AdcReaderTask(ADC_READER_TASKNAME, MaxElementQueueSetTaskAdcReader);
+  mAdcReaderTask =
+      new AdcReaderTask(ADC_READER_TASKNAME, MaxElementQueueSetTaskAdcReader);
 
   // init task
   if (mOSBase->taskCreate((char *)WIFI_MANAGER_TASKNAME.c_str(),
@@ -155,9 +162,8 @@ void startAllTask() {
                           OSBase::PRIORITY_NORMAL, 4096,
                           ID_POWER_MANAGER_TASK) &&
       mOSBase->taskCreate((char *)ADC_READER_TASKNAME.c_str(),
-                          (TaskProc)StartAdcReaderTask,
-                          OSBase::PRIORITY_HIGH, 4096,
-                          ID_ADC_READER_TASK)) {
+                          (TaskProc)StartAdcReaderTask, OSBase::PRIORITY_HIGH,
+                          4096, ID_ADC_READER_TASK)) {
     LOG_INFO("MyMain", "Start All Task Success");
   } else {
     LOG_ERROR("MyMain", "Start All Task Error");

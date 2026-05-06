@@ -25,6 +25,9 @@ OSBase::SemHandle gSemInputBtnConfigFromRelayTaskToWifiTask;
 OSBase::QueueHandle gQueueADCValueToPowerManageTask;
 OSBase::QueueHandle gQueuePowerDataToWifiTask;
 
+// E-Stop EventGroup
+OSBase::EvtHandle gEmergencyEventGroup;
+
 // relay gpio for webserver control
 HalGpioAbstract *gGpioRelay[MessageCommon::MAX_NUM_RELAY]{};
 // power manager access for webserver monitor
@@ -61,6 +64,10 @@ uint64_t device_id48_u64(void) {
 void initSystem() {
   // get OSBase
   mOSBase = TaskManager::getInstance()->getOSBase();
+  
+  // init E-Stop EventGroup
+  gEmergencyEventGroup = mOSBase->evtCreate();
+
   gConfigSystem = ConfigSystemMessage(defaultConfig);
   LOG_INFO("MyMain", "Default Config");
   const auto &activeConfig = gConfigSystem.getConfigSystem();
