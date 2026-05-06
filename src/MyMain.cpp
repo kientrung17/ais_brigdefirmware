@@ -13,6 +13,7 @@
 #include "task/relaymanagertask.h"
 #include "task/wifimanagertask.h"
 #include "task/configsystemtask.h"
+#include "task/mqttmanagertask.h"
 #include "taskmanager.h"
 
 
@@ -32,6 +33,12 @@ const std::string WIFI_MANAGER_TASKNAME = "WifiManagerTask";
 const std::string CONFIG_SYSTEM_TASKNAME = "ConfigSystemTask";
 const uint8_t MaxElementQueueSetTaskConfigSystem = 2;
 ConfigSystemTask *mConfigSystemTask{nullptr};
+
+// mqtt manager
+#define ID_MQTT_MANAGER_TASK 6
+const std::string MQTT_MANAGER_TASKNAME = "MqttManagerTask";
+const uint8_t MaxElementQueueSetTaskMqttManager = 4;
+MqttManagerTask *mMqttManagerTask{nullptr};
 // - 1 (sem 100Hz) + 1 (sem config btn) = 2
 // Dùng 4 để có biên an toàn.
 const uint8_t MaxElementQueueSetTaskWifiManager = 4;
@@ -78,6 +85,15 @@ void StartConfigSystemTask(void const *argument) {
     mConfigSystemTask->onStartProcess();
   } else {
     LOG_ERROR("MyMain", "Start Task Config System Error");
+  }
+}
+
+void StartMqttManagerTask(void const *argument) {
+  if (mMqttManagerTask) {
+    LOG_INFO("MyMain", "Start Task MQTT Manager");
+    mMqttManagerTask->onStartProcess();
+  } else {
+    LOG_ERROR("MyMain", "Start Task MQTT Manager Error");
   }
 }
 
@@ -162,6 +178,10 @@ void startAllTask() {
   ////////////// config system task
   mConfigSystemTask = new ConfigSystemTask(CONFIG_SYSTEM_TASKNAME, MaxElementQueueSetTaskConfigSystem);
 
+  ////////////// mqtt manager task
+  mMqttManagerTask = new MqttManagerTask(MQTT_MANAGER_TASKNAME, MaxElementQueueSetTaskMqttManager);
+  mMqttManagerTask->initregisterQueueToQueueset(&gQueuePowerDataToMqtt, sizeof(ControlStatusDataMessage), 10);
+
   // init task
   if (mOSBase->taskCreate((char *)WIFI_MANAGER_TASKNAME.c_str(),
                           (TaskProc)StartWifiMamnagerTask,
@@ -179,7 +199,10 @@ void startAllTask() {
                           4096, ID_ADC_READER_TASK) &&
       mOSBase->taskCreate((char *)CONFIG_SYSTEM_TASKNAME.c_str(),
                           (TaskProc)StartConfigSystemTask, OSBase::PRIORITY_NORMAL,
-                          4096, ID_CONFIG_SYSTEM_TASK)) {
+                          4096, ID_CONFIG_SYSTEM_TASK) &&
+      mOSBase->taskCreate((char *)MQTT_MANAGER_TASKNAME.c_str(),
+                          (TaskProc)StartMqttManagerTask, OSBase::PRIORITY_NORMAL,
+                          8012, ID_MQTT_MANAGER_TASK)) {
     LOG_INFO("MyMain", "Start All Task Success");
   } else {
     LOG_ERROR("MyMain", "Start All Task Error");
