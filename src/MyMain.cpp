@@ -39,7 +39,7 @@ ConfigSystemTask *mConfigSystemTask{nullptr};
 const std::string MQTT_MANAGER_TASKNAME = "MqttManagerTask";
 const uint8_t MaxElementQueueSetTaskMqttManager = 4;
 MqttManagerTask *mMqttManagerTask{nullptr};
-// - 1 (sem 100Hz) + 1 (sem config btn) = 2
+// - 1 (sem 100Hz)
 // Dùng 4 để có biên an toàn.
 const uint8_t MaxElementQueueSetTaskWifiManager = 4;
 WifiManagerTask *mWifiManagerTask{nullptr};
@@ -134,9 +134,6 @@ void startAllTask() {
   mWifiManagerAbs = new WiFiManagerESP32();
   mWifiManagerTask = new WifiManagerTask(mWifiManagerAbs, WIFI_MANAGER_TASKNAME,
                                          MaxElementQueueSetTaskWifiManager);
-  // register sem
-  mWifiManagerTask->initRegisterSemaphoreToQueueset(
-      &gSemInputBtnConfigFromRelayTaskToWifiTask);
 
   // queue transmit data from power task to wifi task (REMOVED - Using SharedDataStore)
 
@@ -148,16 +145,9 @@ void startAllTask() {
   gGpioRelay[3] = new HalEsp32Gpio(PIN_GPIO_RELAY_4, relayMode);
   gGpioRelay[4] = new HalEsp32Gpio(PIN_GPIO_RELAY_5, relayMode);
   gGpioRelay[5] = new HalEsp32Gpio(PIN_GPIO_RELAY_6, relayMode);
-  // mTouchSensor[0] = new EspidfTouchSensor(PIN_TOUCH_SENSOR_1);
-  // mTouchSensor[1] = new EspidfTouchSensor(PIN_TOUCH_SENSOR_2);
-  // mTouchSensor[2] = new EspidfTouchSensor(PIN_TOUCH_SENSOR_3);
-  // mTouchSensor[3] = new EspidfTouchSensor(PIN_TOUCH_SENSOR_4);
-  // mTouchSensor[4] = new EspidfTouchSensor(PIN_TOUCH_SENSOR_5);
-  // mTouchSensor[5] = new EspidfTouchSensor(PIN_TOUCH_SENSOR_6);
-  // mTouchSensor[6] = new EspidfTouchSensor(PIN_TOUCH_SENSOR_CONFIG);
   mRelayManagerTask = new RelayManagerTask(RELAY_MANAGER_TASKNAME,
                                            MaxElementQueueSetTaskRelayManager,
-                                           gGpioRelay, nullptr);
+                                           gGpioRelay);
   mRelayManagerTask->initregisterQueueToQueueset(&gQueueRelayControlCmd, sizeof(ControlRelayMessage), 10);
 
   ////////////// power manager task

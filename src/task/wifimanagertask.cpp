@@ -62,14 +62,6 @@ void WifiManagerTask::onTimer100HzProcess()
 
 void WifiManagerTask::onQueueSetMessageProcess(OSBase::QueueHandle queue_sem)
 {
-    if (queue_sem == gSemInputBtnConfigFromRelayTaskToWifiTask)
-    {
-        mOSBase->semTake(gSemInputBtnConfigFromRelayTaskToWifiTask);
-        LOG_DEBUG("WifiManagerTask", "[Queue Sem] Received sem gSemInputBtnConfigFromRelayTaskToWifiTask");
-        //todo: bo comment sau khi hoàn thành chức năng đọc nút cấu hình
-        // change mode wifi to AP + STA
-        // changeModeWifiToAPSta();
-    }
 
 }
 

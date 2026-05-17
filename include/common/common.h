@@ -4,7 +4,6 @@
 #include "stdbool.h"
 #include "stdint.h"
 
-
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -24,18 +23,17 @@ void processTimer100Hz();
 
 #include "HAL_ESP32/esp32adc.h"
 #include "OSFreeRTOS.h"
+#include "configsystemmessage.h"
+#include "flashmanager.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/event_groups.h"
-#include <atomic>
-#include "configsystemmessage.h"
-#include "message/controlstatusdatamessage.h"
-#include "message/controlrelaymessage.h"
-#include "flashmanager.h"
 #include "loggermanager.h"
+#include "message/controlrelaymessage.h"
+#include "message/controlstatusdatamessage.h"
 #include "message/messagecommon.h"
 #include "stdint.h"
+#include <atomic>
 #include <string>
-
 
 #define UDP_LOCAL_PORT_SYSTEM_CONFIG 8080
 // Gpio relay
@@ -73,22 +71,24 @@ extern OSBase *mOSBase;
 extern OSBase::SemHandle gSemInputBtnConfigFromRelayTaskToWifiTask;
 // Shared Data Store (Lock-free)
 struct SharedDataStore {
-    std::atomic<float> ampe_ch1{0.0f};
-    std::atomic<float> ampe_ch2{0.0f};
-    std::atomic<float> voltage_pin{0.0f};
-    std::atomic<bool> is_lost_phase{false};
-    std::atomic<bool> is_lost_electric{false};
+  std::atomic<float> ampe_ch1{0.0f};
+  std::atomic<float> ampe_ch2{0.0f};
+  std::atomic<float> voltage_pin{0.0f};
+  std::atomic<float> motor_temp{0.0f};
+  std::atomic<float> remote_voltage{0.0f};
+  std::atomic<bool> is_lost_phase{false};
+  std::atomic<bool> is_lost_electric{false};
 };
 extern SharedDataStore gSharedData;
 
 // E-Stop EventGroup for ultra-low latency emergency relay cutoff
 extern EventGroupHandle_t gEmergencyEventGroup;
-#define BIT_ESTOP_OVERLOAD   (1 << 0)
+#define BIT_ESTOP_OVERLOAD (1 << 0)
 #define BIT_ESTOP_LOST_PHASE (1 << 1)
 
 extern EventGroupHandle_t gEventGroupNetworkState;
 #define BIT_WIFI_CONNECTED (1 << 0)
-#define BIT_LAN_CONNECTED  (1 << 1)
+#define BIT_LAN_CONNECTED (1 << 1)
 
 // IPC Queues
 extern OSBase::QueueHandle gQueuePowerDataToMqtt;

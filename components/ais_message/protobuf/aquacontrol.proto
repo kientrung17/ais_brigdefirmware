@@ -33,4 +33,6 @@ message ControlStatusData {
     required uint32 AmpeChannel2x100 = 3;
     required uint32 IsPowerLostPhare = 4;
     required uint32 IsLostElectric = 5;
+    required uint32 Temperaturex100 = 6;
+    required uint32 Voltagex100 = 7;
 }

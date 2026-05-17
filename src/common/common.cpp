@@ -21,7 +21,6 @@ const System_ConfigSystemData defaultConfig = {.userSystemID = "sys000001",
 // Init param
 OSBase *mOSBase;
 // wifi task
-OSBase::SemHandle gSemInputBtnConfigFromRelayTaskToWifiTask;
 // Shared Data Store
 SharedDataStore gSharedData;
 
