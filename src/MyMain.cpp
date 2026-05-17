@@ -9,6 +9,7 @@
 #include "logger/loggermanager.h"
 #include "message/controlstatusdatamessage.h"
 #include "task/adcreadertask.h"
+#include "task/espnowreceivertask.h"
 #include "task/powermanagertask.h"
 #include "task/relaymanagertask.h"
 #include "task/wifimanagertask.h"
@@ -70,6 +71,12 @@ const std::string ADC_READER_TASKNAME = "AdcReaderTask";
 const uint8_t MaxElementQueueSetTaskAdcReader = 2;
 AdcReaderTask *mAdcReaderTask{nullptr};
 
+// esp-now receiver task
+#define ID_ESPNOW_RECEIVER_TASK 7
+const std::string ESPNOW_RECEIVER_TASKNAME = "EspNowReceiverTask";
+const uint8_t MaxElementQueueSetTaskEspNowReceiver = 2;
+EspNowReceiverTask *mEspNowReceiverTask{nullptr};
+
 void StartWifiMamnagerTask(void const *argument) {
   if (mWifiManagerTask) {
     LOG_INFO("MyMain", "Start Task wifi");
@@ -124,6 +131,15 @@ void StartAdcReaderTask(void const *argument) {
   }
 }
 
+void StartEspNowReceiverTask(void const *argument) {
+  if (mEspNowReceiverTask) {
+    LOG_INFO("MyMain", "Start Task ESP-NOW Receiver");
+    mEspNowReceiverTask->onStartProcess();
+  } else {
+    LOG_ERROR("MyMain", "Start Task ESP-NOW Receiver Error");
+  }
+}
+
 void startAllTask() {
   LOG_INFO("MyMain",
            "************Start init system and run task****************");
@@ -166,6 +182,10 @@ void startAllTask() {
   mAdcReaderTask =
       new AdcReaderTask(ADC_READER_TASKNAME, MaxElementQueueSetTaskAdcReader);
 
+  ////////////// esp-now receiver task
+  mEspNowReceiverTask =
+      new EspNowReceiverTask(ESPNOW_RECEIVER_TASKNAME, MaxElementQueueSetTaskEspNowReceiver);
+
   ////////////// config system task
   mConfigSystemTask = new ConfigSystemTask(CONFIG_SYSTEM_TASKNAME, MaxElementQueueSetTaskConfigSystem);
 
@@ -193,7 +213,10 @@ void startAllTask() {
                           4096, ID_CONFIG_SYSTEM_TASK) &&
       mOSBase->taskCreate((char *)MQTT_MANAGER_TASKNAME.c_str(),
                           (TaskProc)StartMqttManagerTask, OSBase::PRIORITY_NORMAL,
-                          8012, ID_MQTT_MANAGER_TASK)) {
+                          8012, ID_MQTT_MANAGER_TASK) &&
+      mOSBase->taskCreate((char *)ESPNOW_RECEIVER_TASKNAME.c_str(),
+                          (TaskProc)StartEspNowReceiverTask, OSBase::PRIORITY_NORMAL,
+                          4096, ID_ESPNOW_RECEIVER_TASK)) {
     LOG_INFO("MyMain", "Start All Task Success");
   } else {
     LOG_ERROR("MyMain", "Start All Task Error");

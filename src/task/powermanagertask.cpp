@@ -54,6 +54,8 @@ void PowerManagerTask::onTimer100HzProcess()
         statusData.AmpeChannel2x100 = (uint32_t)(gSharedData.ampe_ch2.load(std::memory_order_relaxed) * 100.0f);
         statusData.IsPowerLostPhare = mIsSystemLostPhase ? 1 : 0;
         statusData.IsLostElectric = mIsSystemLostElectric ? 1 : 0;
+        statusData.Temperaturex100 = (uint32_t)(gSharedData.motor_temp.load(std::memory_order_relaxed) * 100.0f);
+        statusData.Voltagex100 = (uint32_t)(gSharedData.remote_voltage.load(std::memory_order_relaxed) * 100.0f);
 
         ControlStatusDataMessage msg(statusData);
         // Gửi đi, không block (timeout=0)
