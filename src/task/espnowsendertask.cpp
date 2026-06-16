@@ -22,6 +22,40 @@ void EspNowSenderTask::onInitProcess()
     ESP_ERROR_CHECK(esp_wifi_set_storage(WIFI_STORAGE_RAM));
     ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_STA));
     ESP_ERROR_CHECK(esp_wifi_start());
+    
+    // Quét tìm kênh WiFi của SoftAP "Aqua_Control" của mạch ControlHub để tự động đồng bộ kênh
+    uint8_t target_channel = 1; // Mặc định là kênh 1
+    wifi_scan_config_t scan_config = {};
+    scan_config.ssid = (uint8_t*)"Aqua_Control";
+    scan_config.show_hidden = true;
+    
+    LOG_INFO("EspNowSenderTask", "Scanning for ControlHub SoftAP 'Aqua_Control' to sync channel...");
+    // Gọi quét đồng bộ (blocking scan)
+    if (esp_wifi_scan_start(&scan_config, true) == ESP_OK) {
+        uint16_t ap_count = 0;
+        esp_wifi_scan_get_ap_num(&ap_count);
+        if (ap_count > 0) {
+            wifi_ap_record_t *ap_records = (wifi_ap_record_t *)malloc(sizeof(wifi_ap_record_t) * ap_count);
+            if (ap_records) {
+                if (esp_wifi_scan_get_ap_records(&ap_count, ap_records) == ESP_OK) {
+                    for (int i = 0; i < ap_count; i++) {
+                        if (strcmp((char*)ap_records[i].ssid, "Aqua_Control") == 0) {
+                            target_channel = ap_records[i].primary;
+                            LOG_INFO("EspNowSenderTask", "Found 'Aqua_Control' SoftAP on Channel %d. Syncing...", target_channel);
+                            break;
+                        }
+                    }
+                }
+                free(ap_records);
+            }
+        } else {
+            LOG_INFO("EspNowSenderTask", "'Aqua_Control' SoftAP not found. Defaulting to Channel 1.");
+        }
+    } else {
+        LOG_ERROR("EspNowSenderTask", "WiFi Scan failed. Defaulting to Channel 1.");
+    }
+
+    ESP_ERROR_CHECK(esp_wifi_set_channel(target_channel, WIFI_SECOND_CHAN_NONE));
 
     // Khởi tạo ESP-NOW
     if (esp_now_init() != ESP_OK) {
@@ -45,25 +79,5 @@ void EspNowSenderTask::onInitProcess()
 
 void EspNowSenderTask::onTimer100HzProcess()
 {
-    static int tick = 0;
-    tick++;
-    if (tick >= 100) { // Mỗi 1 giây phát 1 lần
-        tick = 0;
-
-        EspNowMonitorPayload payload;
-        payload.deviceId = 101;
-        
-        // Giả lập nhiệt độ từ 30.00 đến 40.00
-        payload.motorTemp = 30.0f + (esp_random() % 1000) / 100.0f;
-        // Giả lập điện áp từ 11.50 đến 13.00
-        payload.remoteVoltage = 11.5f + (esp_random() % 150) / 100.0f;
-
-        esp_err_t result = esp_now_send(mBroadcastAddress, (uint8_t *) &payload, sizeof(payload));
-        
-        if (result == ESP_OK) {
-            LOG_INFO("EspNowSenderTask", "Sent Mock Data - Temp: %.2f, Volt: %.2f", payload.motorTemp, payload.remoteVoltage);
-        } else {
-            LOG_ERROR("EspNowSenderTask", "Error sending data");
-        }
-    }
+    // Không gửi dữ liệu giả lập nữa, chỉ chuyển tiếp dữ liệu thật từ LoRaBridgeTask
 }

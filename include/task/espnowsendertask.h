@@ -7,9 +7,13 @@
 
 #pragma pack(push, 1)
 struct EspNowMonitorPayload {
-    uint32_t deviceId;       // ID thiết bị phát, ex: 101
-    float motorTemp;         // Nhiệt độ vỏ động cơ
-    float remoteVoltage;     // Điện áp pin/ắc quy
+    uint32_t deviceId;       // ID thiết bị phát, ex: 1, 2, 3...
+    float ampeChannel1;      // Dòng điện Kênh 1
+    float oxy;               // Nồng độ Oxy hòa tan
+    float pH;                // Độ pH nước
+    float voltage;           // Điện áp pin/ắc quy
+    float temperature;       // Nhiệt độ vỏ động cơ
+    uint32_t isPowerLostPhare; // Mất pha mạch Monitor (Bitmask từ 0 đến 7)
 };
 #pragma pack(pop)
 
