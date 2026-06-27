@@ -2,12 +2,51 @@
 #include "common.h"
 #include "esp_mac.h"
 #include "esp_task_wdt.h"
+#include "esp_log.h"
 #include "flashmanager.h"
 #include "common/storeflashmanager.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "taskmanager.h"
 #include <inttypes.h>
+
+// Danh sách tên các task quan trọng cần được bảo vệ khỏi taskfreezer
+static const char* BRIDGE_PROTECTED_TASK_NAMES[] = {
+    "EspNowSenderTas",  // FreeRTOS truncates to 16 chars
+    "LoraBridgeTask",
+    nullptr // sentinel
+};
+
+static void resumeSuspendedProtectedTasks() {
+    UBaseType_t numTasks = uxTaskGetNumberOfTasks();
+    TaskStatus_t* taskArray = (TaskStatus_t*)pvPortMalloc(numTasks * sizeof(TaskStatus_t));
+    if (!taskArray) return;
+    uint32_t totalRunTime = 0;
+    UBaseType_t filled = uxTaskGetSystemState(taskArray, numTasks, &totalRunTime);
+    for (UBaseType_t i = 0; i < filled; i++) {
+        if (taskArray[i].eCurrentState == eSuspended) {
+            for (int j = 0; BRIDGE_PROTECTED_TASK_NAMES[j] != nullptr; j++) {
+                if (strncmp(taskArray[i].pcTaskName, BRIDGE_PROTECTED_TASK_NAMES[j], configMAX_TASK_NAME_LEN - 1) == 0) {
+                    ESP_LOGW("WDT_RESUMER", "Task '%s' Suspended by taskfreezer! Resuming...", taskArray[i].pcTaskName);
+                    vTaskResume(taskArray[i].xHandle);
+                    break;
+                }
+            }
+        }
+    }
+    vPortFree(taskArray);
+}
+
+static void watchdogTask(void *arg) {
+    while (1) {
+        vTaskDelay(pdMS_TO_TICKS(1000)); // kiểm tra mỗi 1 giây
+        resumeSuspendedProtectedTasks();
+    }
+}
+
+extern "C" void startWatchdogTask() {
+    xTaskCreate(watchdogTask, "WdtResumer", 2048, nullptr, 22, nullptr);
+}
 
 
 const System_ConfigSystemData defaultConfig = {.userSystemID = "sys000001",
